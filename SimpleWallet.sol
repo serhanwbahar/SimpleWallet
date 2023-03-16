@@ -4,24 +4,29 @@ import "./Allowance.sol";
 
 contract SimpleWallet is Allowance {
     
-    event MoneySent(address indexed _beneficiary, uint _amount);
-    event MoneyReceived(address indexed _from, uint _amount);
+    event MoneySent(address indexed beneficiary, uint amount);
+    event MoneyReceived(address indexed from, uint amount);
 
-    function withdrawMoney(address payable _to, uint _amount) public ownerOrAllowed(_amount) {
-        require(_amount <= address(this).balance, "Not enough funds!");
+    // Allows the owner or an allowed user to withdraw money
+    function withdrawMoney(address payable to, uint amount) public ownerOrAllowed(amount) {
+        require(amount <= address(this).balance, "Not enough funds!");
+        
+        // Reduce allowance if the sender is not the owner
         if(!isOwner()) {
-            reduceAllowance(msg.sender, _amount);
+            reduceAllowance(msg.sender, amount);
         }
-        emit MoneySent(_to, _amount);
-        _to.transfer(_amount);
+        
+        emit MoneySent(to, amount);
+        to.transfer(amount);
     }
     
+    // Override renounceOwnership function to prevent usage
     function renounceOwnership() public override onlyOwner {
         revert("Can't renounce ownership here");
     }
 
+    // Fallback function to receive ether and emit MoneyReceived event
     receive () external payable {
         emit MoneyReceived(msg.sender, msg.value);
-
     }
 }

@@ -7,23 +7,26 @@ contract Allowance is Ownable {
     
     using SafeMath for uint;
     
-    event AllowanceChanged(address indexed _forWho, address indexed _forWhom, uint _oldAmount, uint _newAmount);
+    event AllowanceChanged(address indexed forWho, address indexed byWhom, uint oldAmount, uint newAmount);
     
     mapping(address => uint) public allowance;
 
-    function addAllowance(address _who, uint _amount) public onlyOwner {
-        emit AllowanceChanged(_who, msg.sender, allowance[_who], _amount);
-        allowance[_who] = _amount;
+    // Add an allowance for a specific address
+    function addAllowance(address who, uint amount) public onlyOwner {
+        emit AllowanceChanged(who, msg.sender, allowance[who], amount);
+        allowance[who] = amount;
     }
 
-    modifier ownerOrAllowed(uint _amount) {
-        require(isOwner() || allowance[msg.sender] >= _amount, "You are not allowed!");
+    // Modifier to check if the sender is the owner or has enough allowance
+    modifier ownerOrAllowed(uint amount) {
+        require(isOwner() || allowance[msg.sender] >= amount, "You are not allowed!");
         _;
     }
 
-    function reduceAllowance(address _who, uint _amount) internal {
-        emit AllowanceChanged(_who, msg.sender, allowance[_who], allowance[_who].sub(_amount));
-        allowance[_who] = allowance[_who].sub(_amount);
+    // Reduce the allowance of a specific address
+    function reduceAllowance(address who, uint amount) internal {
+        emit AllowanceChanged(who, msg.sender, allowance[who], allowance[who].sub(amount));
+        allowance[who] = allowance[who].sub(amount);
     }    
     
 }
